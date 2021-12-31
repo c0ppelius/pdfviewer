@@ -30,8 +30,10 @@ func main() {
 
 	if !strings.Contains(file, "pdf") {
 		badFile()
+		return
 	} else if file[len(file)-3:] != "pdf" {
 		badFile()
+		return
 	}
 
 	http.HandleFunc("/pdf/xyz.pdf", func(w http.ResponseWriter, r *http.Request) {
