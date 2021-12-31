@@ -4,7 +4,7 @@ A basic CLI app for serving a local pdf on localhost using PDF.js.
 
 ## Usage 
 
-From the folder containging `X.pdf` run 
+From the folder containing `X.pdf` run 
 ```
 pdfviewer X.pdf 
 ```
