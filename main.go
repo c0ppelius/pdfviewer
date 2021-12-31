@@ -2,8 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -11,14 +13,26 @@ const (
 	src  = "/Users/matt/GitHub/pdfviewer/src"
 )
 
-var file string
-
-func init() {
-	flag.StringVar(&file, "file", "", "the pdf file")
-	flag.Parse()
+func badFile() {
+	fmt.Println("Enter the pdf file name.")
 }
 
 func main() {
+
+	flag.Parse()
+	args := flag.Args()
+	if len(args) == 0 {
+		badFile()
+		return
+	}
+
+	file := args[0]
+
+	if !strings.Contains(file, "pdf") {
+		badFile()
+	} else if file[len(file)-3:] != "pdf" {
+		badFile()
+	}
 
 	http.HandleFunc("/pdf/xyz.pdf", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./"+file)
