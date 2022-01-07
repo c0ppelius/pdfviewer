@@ -398,4 +398,10 @@ See https://github.com/adobe-type-tools/cmap-resources
     </div> <!-- outerContainer -->
     <div id="printContainer"></div>
   </body>
+  <script type="text/javascript">
+    var socket = new WebSocket("ws://localhost:8888/ws");
+    socket.onmessage = function () {
+      location.reload();
+    };
+  </script>
 </html>
