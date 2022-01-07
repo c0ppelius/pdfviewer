@@ -71,6 +71,10 @@ func main() {
 		w.Write(nil)
 	})
 
+	http.HandleFunc("/forward", func(w http.ResponseWriter, r *http.Request) {
+		cmd = "forward"
+	})
+
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		// Upgrade upgrades the HTTP server connection to the WebSocket protocol.
 		conn, err := upgrader.Upgrade(w, r, nil)

@@ -415,8 +415,12 @@ See https://github.com/adobe-type-tools/cmap-resources
   </body>
   <script type="text/javascript">
     var socket = new WebSocket("ws://localhost:8888/ws");
-    socket.onmessage = function () {
-      location.reload();
+    socket.onmessage = function (e) {
+      if (e.data === "reload") {
+        location.reload();
+      } else if (e.data === "forward") {
+        location.href = "https://www.google.com"
+      }
     };
   </script>
 </html>
