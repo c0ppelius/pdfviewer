@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/c0ppelius/pdfviewer/src"
@@ -18,9 +20,20 @@ const (
 	port = ":8888"
 )
 
+var assets = src.Assets
+
 var upgrader = websocket.Upgrader{}
 
-var cmd string
+type Message struct {
+	Action string `json:"action"`
+	Page   string `json:"page"`
+}
+
+type pageStruct struct {
+	Page int
+}
+
+var cmd Message
 
 func filePath() (path string) {
 
@@ -52,9 +65,11 @@ func filePath() (path string) {
 	return
 }
 
-var assets = src.Assets
-
 func main() {
+
+	trigger := false
+
+	cmd = Message{}
 
 	path := filePath()
 
@@ -67,12 +82,20 @@ func main() {
 	fmt.Println("Pdf at: ", url)
 
 	http.HandleFunc("/reload", func(w http.ResponseWriter, r *http.Request) {
-		cmd = "reload"
+		trigger = true
+		cmd.Action = "reload"
 		w.Write(nil)
 	})
 
+	// hit with `curl -h "Content-Type: application/json" -d '{"Page":1}' http://localhost:8888/reload`
 	http.HandleFunc("/forward", func(w http.ResponseWriter, r *http.Request) {
-		cmd = "forward"
+		trigger = true
+		cmd.Action = "forward"
+		decoder := json.NewDecoder(r.Body)
+		var p pageStruct
+		_ = decoder.Decode(&p)
+		cmd.Page = url + "#page=" + strconv.Itoa(p.Page)
+		w.Write(nil)
 	})
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -85,12 +108,16 @@ func main() {
 		defer conn.Close()
 
 		for {
-			if cmd != "" {
-				err := conn.WriteMessage(websocket.TextMessage, []byte(cmd))
+			if trigger {
+				msg, err := json.Marshal(cmd)
+				if err != nil {
+					log.Println("json marshall failed:", err)
+				}
+				err = conn.WriteMessage(websocket.TextMessage, []byte(msg))
 				if err != nil {
 					log.Println("write failed:", err)
 				}
-				cmd = ""
+				trigger = false
 			}
 		}
 	})
